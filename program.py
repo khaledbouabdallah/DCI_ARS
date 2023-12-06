@@ -21,24 +21,58 @@ class AF():
                     self.attacks.append(attack)
     
     
-    def VE_CO(self) -> None:
+    def VE_CO(self) -> bool:
         pass
     
-    def DC_CO(self) -> None:
+    def DC_CO(self) -> bool:
         pass
     
-    def DS_CO(self) -> None:
+    def DS_CO(self) -> bool:
         pass
     
-    def VE_ST(self) -> None:
+    def VE_ST(self) -> bool:
         pass
     
-    def DC_ST(self) -> None:
+    def DC_ST(self) -> bool:
         pass
     
-    def DS_ST(self) -> None:
+    def DS_ST(self) -> bool:
         pass
     
+
+    def is_admissible(this, E: list) -> bool:      #returns True if E is an admissable set
+        for i in range(len(E)):                    #verify conflict-freeness
+            for j in range(i, len(E)):
+                if [E[i], E[j]] in this.attacks:
+                    return False
+        
+        for a in E:                                #verify defense
+            for b in this.args:
+                if [b,a] in this.attacks:
+                    for c in E:
+                        if [c,b] in this.attacks:  #looking for a defender for a
+                            continue
+                    return False 
+        return True
+
+
+"""   ça marche pas bien encore 
+    def is_complete(this, S: list) -> bool:      #return True if E is a complete extension
+        if not this.is_admissible(S):
+            return False
+        for a in this.args:
+            attacking_a = []
+            for elem1 in this.attacks:            
+                if elem1[1] == a:                 #we list all the args that are attacking a
+                    attacking_a.append(elem[0])
+                    for elem_attacking_a in attacking_a:
+                        for elem2 in this.attacks: #we check if all the elements attacking a are attacking by an element in S
+                            if elem2[1] == elem_attacking_a and elem2[0] in S:
+                                continue
+                        return False
+        return True
+"""
+
 def main():
     parser = argparse.ArgumentParser()
     # Add script arguments
@@ -51,15 +85,24 @@ def main():
     af = AF(path=args.f)
     print(af.args)
     print(af.attacks)
-    
-    if args.p == "":
-        pass
-    elif args.p == "":
-        pass
-    elif args.p == "":
-        pass
-    
-    
+
+    if args.p == "VE-CO":
+        print("YES") if af.VE_CO(args.a) else print("NO")
+
+    elif args.p == "VE-ST":
+        print("YES") if af.VE_ST(args.a) else print("NO")
+
+    elif args.p == "DC-CO":
+        print("YES") if af.DC_CO(args.a) else print("NO")
+
+    elif args.p == "DS-CO":
+        print("YES") if af.DS_CO(args.a) else print("NO")
+
+    elif args.p == "DC-ST":
+        print("YES") if af.DC_ST(args.a) else print("NO")
+
+    elif args.p == "DS-ST":
+        print("YES") if af.DS_ST(args.a) else print("NO")
 
 if __name__ == "__main__":
     main()
