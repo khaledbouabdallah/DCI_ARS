@@ -42,17 +42,19 @@ class AF():
 
     def is_admissible(this, E: list) -> bool:      #returns True if E is an admissable set
         for i in range(len(E)):                    #verify conflict-freeness
-            for j in range(i, len(E)):
+            for j in range(i+1, len(E)):
                 if [E[i], E[j]] in this.attacks:
                     return False
         
+        val = False
         for a in E:                                #verify defense
             for b in this.args:
                 if [b,a] in this.attacks:
                     for c in E:
                         if [c,b] in this.attacks:  #looking for a defender for a
-                            continue
-                    return False 
+                            val = True
+                    if val == False:
+                        return False
         return True
 
 
@@ -85,7 +87,8 @@ def main():
     af = AF(path=args.f)
     print(af.args)
     print(af.attacks)
-
+    #print(af.is_admissible(['a','c','d']))          #a little test..
+    
     if args.p == "VE-CO":
         print("YES") if af.VE_CO(args.a) else print("NO")
 
