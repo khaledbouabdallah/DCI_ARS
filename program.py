@@ -21,8 +21,17 @@ class AF():
                     self.attacks.append(attack)
     
     
-    def VE_CO(self) -> None:
-        pass
+    def VE_CO(self, S):
+        for arg in S:  #Check if it is conflict-free
+            for attack in self.attacks:
+                if attack[0] == arg and attack[1] in S:
+                    return False
+        for args in self.args: #check if it defends
+            if args not in S:
+                for attack in self.attacks:
+                    if attack[1] == args and attack[0] in S :
+                        return True
+        return False
     
     def DC_CO(self) -> None:
         pass
@@ -52,8 +61,8 @@ def main():
     print(af.args)
     print(af.attacks)
     
-    if args.p == "":
-        pass
+    if args.p == "VE_CO":
+        print (af.VE_CO(S=(args.a).split(",")))
     elif args.p == "":
         pass
     elif args.p == "":
