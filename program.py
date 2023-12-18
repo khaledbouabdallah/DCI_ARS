@@ -54,14 +54,14 @@ class AF():
     def DS_ST(self) -> bool:
         pass
     
-    def _get_attacks_by_(self,s) -> list: # get list of attacks done by set s (list of lists)
-        attacks = []    
+    def _get_attacks_by_(self,s) -> set: # get list of attacks done by set s (list of lists)
+        attacks = [] 
         for attack in self.attacks:
             if attack[0] in s:
                 attacks.append(attack)
         return attacks
     
-    def _is_attacked_by_(self,s,z) -> bool: # return True if set 's' attack is attacked by set 'z'
+    def _is_attacked_by_(self,s,z) -> bool: # return True if set 's' is attacked by set 'z'
         attacks = self._get_attacks_by_(z)
         for a in s:   
             for attack in attacks :
@@ -69,34 +69,38 @@ class AF():
                     return True
         return False
     
-    def _get_attacked_by_(self,s,z) -> list: # get subset of s which is attacked by set z
-        attacked = []
+    def _get_attacked_by_(self,s,z) -> set: # get subset of 's' which is attacked by set 'z'
+        attacked = set()
         for a in s:
             if self._is_attacked_by_([a],z):
-                attacked.append(a)
+                attacked.add(a)
         return attacked
+    
+    def _get_not_attacked_by(self,s,z) -> set: # get subset of 's' which are not attacked by set 'z'
+        arguments = set(self.args)
+        return arguments.difference(self._get_attacked_by_(s,z))
     
  
     
   
     def generate_possible_complete(self) -> list:
         result = []
-        # find nodes that are not attacked 
-        attacked = self._get_attacked_by_(self.args,self.args)
-        not_attacked = set(self.args).difference(set(attacked))
+        # find nodes that are not attacked by anyone
+        not_attacked =  self._get_not_attacked_by(self.args,self.args)
         result.append(not_attacked)
-        logger.info(f"not attacked at all: {not_attacked}")         
+            
         if not_attacked: # we found something 
+            logger.info(f"not attacked at all (grounded): {not_attacked}")     
             while True:
-                new_attacked = self._get_attacked_by_(self.args,result[-1]) # argument that are attacked with our initial "grounded"
-                new_attackers = set(self.args).difference(set(new_attacked)) # remove their attacks 
-                new_attacked = self._get_attacked_by_(self.args,new_attackers) # find elements that are attacked
-                new_not_attacked = set(self.args).difference(set(new_attacked)) # find new set that are not attacked after 
+                new_attackers = self._get_not_attacked_by(self.args,result[-1]) # original set - set which are attacked by the grounded (first iteration example) #1
+                new_not_attacked = self._get_not_attacked_by(self.args,new_attackers) # set which are not attacked by #1 (defended by grounded (first iteration))
                 logger.info(f"new possible complete: {new_not_attacked}")
                 if new_not_attacked in result:
                     return result
                 result.append(new_not_attacked)
         else: # we only have the empty set 
+            logger.info(f"not attacked at all (grounded): empty set") 
+                
             pass
 
     def is_admissible(this, E: list) -> bool:      #returns True if E is an admissable set
