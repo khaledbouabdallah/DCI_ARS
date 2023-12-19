@@ -1,5 +1,6 @@
 import argparse
 import logging
+import numpy as np
 import datetime
 
 
@@ -75,9 +76,7 @@ class AF():
 
     
     def VE_ST(this, E) -> bool:
-        list_co = this.generate_possible_complete()
-
-        not_E = this.args.difference(E)      # A \ E
+        not_E = set(this.args) - set(E)      # A \ E
 
         val = False
         for a in not_E:                      #we check for each a € A\E if an element from E attacks a
@@ -99,7 +98,6 @@ class AF():
                 list_co.remove(elem)         #if not we remove it from the list
 
         for elem in list_co:                 #we check if a is in one co
-            print(a, elem)
             if a[0] in elem:
                 return True
         return False                         #if not we return False
