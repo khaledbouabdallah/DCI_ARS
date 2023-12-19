@@ -159,14 +159,7 @@ class AF():
                     return result
                 result.append(new_not_attacked)
         else: # we only have the empty set 
-            logger.info(f"not attacked at all (grounded): empty set") 
-            while True:
-                new_attackers = self._get_not_attacked_by(self.args,result[-1]) # original set - set which are attacked by the grounded (first iteration example) #1
-                new_not_attacked = self._get_not_attacked_by(self.args,new_attackers) # set which are not attacked by #1 (defended by grounded (first iteration))
-                logger.info(f"new possible complete: {new_not_attacked}")
-                if new_not_attacked in result:
-                    return result
-                result.append(new_not_attacked)               
+            logger.info(f"not attacked at all (grounded): empty set")            
             pass
 
 
