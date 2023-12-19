@@ -51,7 +51,7 @@ class AF():
         list_co = this.generate_possible_complete()
 
         for elem in list_co:                 #we check for each elem if is complete
-            if not this.is_complete(elem):
+            if not this.VE_CO(elem):
                 list_co.remove(elem)         #if not we remove it from the list
 
         for elem in list_co:                 #we check if a is in one co
@@ -65,7 +65,7 @@ class AF():
         list_co = this.generate_possible_complete()
 
         for elem in list_co:                 #we check for each elem if is complete
-            if not this.is_complete(elem):
+            if not this.VE_CO(elem):
                 list_co.remove(elem)         #if not we remove it from the list
 
         for elem in list_co:                 #we check if a is in each co
@@ -155,15 +155,6 @@ class AF():
                         return False
         return True
 
-    def is_complete(this, E:list) -> bool:     #returns True if E is a complete set, we suppose E is admissible
-        for a in E:                                #verify defense
-            for b in this.args:
-                if [a,b] in this.attacks:
-                    for set_attack in this.attacks:
-                        if [b,set_attack[1]] in this.attacks:  #looking for a defender for a
-                            if set_attack[1] not in E:
-                                return False
-        return True
 
 
 def main():
