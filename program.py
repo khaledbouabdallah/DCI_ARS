@@ -54,6 +54,12 @@ class AF():
     def DS_ST(self) -> bool:
         pass
     
+    def _set_is_in_list(self,s,l) -> bool: #check if a set is in a list of sets (somehow set in L does not work directly)
+        for x in l:
+            if x == s:
+                return True
+        return False
+    
     def _get_attacks_by_(self,s) -> set: # get list of attacks done by set s (list of lists)
         attacks = [] 
         for attack in self.attacks:
@@ -98,32 +104,29 @@ class AF():
         else: # we only have the empty set 
             logger.info(f"not attacked at all (grounded): empty set")    
             for argument in self.args:
+                    if self._set_is_in_list(set(argument),result):
+                        continue
+                    logger.info(f"picked start: {argument}")
                     new_attackers = self._get_not_attacked_by(self.args,argument) # original set - set which are attacked by the grounded (first iteration example) 
-                    new_not_attacked = self._get_not_attacked_by(self.args,argument) # set which are not attacked by #1 (defended by grounded (first iteration))
+                    new_not_attacked = self._get_not_attacked_by(self.args,new_attackers) # set which are not attacked by #1 (defended by grounded (first iteration))
+        
                     if not new_not_attacked: # pass current iteration
-                        pass 
-                    result.append(new_not_attacked)
+                        logger.info(f"new possible complete: 'empty set'")
+                        continue 
+                    logger.info(f"new possible complete: {new_not_attacked}")
+                    if not self._set_is_in_list(new_not_attacked,result): 
+                            result.append(new_not_attacked)
                     while True: # same logic as the other case
                         new_attackers = self._get_not_attacked_by(self.args,result[-1]) 
-                        new_not_attacked = self._get_not_attacked_by(self.args,new_attackers) 
-                        logger.info(f"new possible complete: {new_not_attacked}")
-                        if new_not_attacked in result:
+                        new_not_attacked = self._get_not_attacked_by(self.args,new_attackers)      
+                        if self._set_is_in_list(new_not_attacked,result): 
                             break
+                        logger.info(f"new possible complete: {new_not_attacked}")
                         result.append(new_not_attacked)
+            logger.info(f"list of possible complete extensions: {result}")
             return result
                 
-                    
             
-            
-            
-                
-            pass
-
-    
-    def _is_complete_(self,s) -> bool: # given an admissible set, is it complete?
-        # TODO 
-        pass
-
 
 
 
