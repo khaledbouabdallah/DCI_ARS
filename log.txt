@@ -1,5 +1,3 @@
-2023-12-19 16:39:15,681 - INFO - list of arguments: ['a', 'b', 'c', 'd']
-2023-12-19 16:39:15,681 - INFO - list of attacks: [['a', 'b'], ['b', 'c'], ['b', 'd']]
-2023-12-19 16:39:15,681 - INFO - not attacked at all (grounded): {'a'}
-2023-12-19 16:39:15,681 - INFO - new possible complete: {'c', 'd', 'a'}
-2023-12-19 16:39:15,681 - INFO - new possible complete: {'c', 'd', 'a'}
+2023-12-19 16:58:59,531 - INFO - list of arguments: ['A', 'B', 'C', 'D', 'E']
+2023-12-19 16:58:59,531 - INFO - list of attacks: [['A', 'B'], ['B', 'A'], ['A', 'C'], ['C', 'A'], ['B', 'C'], ['C', 'B'], ['C', 'D'], ['D', 'C'], ['D', 'E'], ['E', 'D']]
+2023-12-19 16:58:59,531 - INFO - not attacked at all (grounded): empty set

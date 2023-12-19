@@ -38,14 +38,15 @@ class AF():
     
     
     def VE_CO(this, E) -> bool:
-        for a in E:                                
-            for b in this.args:                         #we check everything that a is attacking
-                if [a,b] in this.attacks:
-                    for set_attack in this.attacks:            #we check everything attacked by b, and so defended by a
-                        if [b,set_attack[1]] in this.attacks:  
-                            if set_attack[1] not in E:         #if that element is not in E, then E is not a CO
-                                return False
-        return True 
+        list_co = this.generate_possible_complete()
+        print(list_co)
+
+        for elem in list_co:                 #we check for each elem if is complete
+            if not this.is_complete(elem):
+                list_co.remove(elem)         #if not we remove it from the list
+
+        print(list_co)
+        return True if set(E) in list_co else False      #return True if E in the list of complete extensions
     
 
     def DC_CO(this, a) -> bool:
@@ -76,18 +77,15 @@ class AF():
 
     
     def VE_ST(this, E) -> bool:
-        not_E = set(this.args) - set(E)      # A \ E
+        list_co = this.generate_possible_complete()
+        print(list_co)
 
-        val = False
-        for a in not_E:                      #we check for each a € A\E if an element from E attacks a
-            for set_attack in this.attacks:
-                if set_attack[0] in E and set_attack[1] == a:
-                    val = True
-            if not val:                      #if there's none we return False directly
-                return False
-            else:                            #if there's one we put val back to False for the next loop
-                val = False
-        return True
+        for elem in list_co:                 #we check for each elem if is stable
+            if not this.is_stable(elem):
+                list_co.remove(elem)         #if not we remove it from the list
+
+        print(list_co)
+        return True if set(E) in list_co else False   #return True if E in the list of stable extensions
     
 
     def DC_ST(this, a) -> bool:
@@ -185,7 +183,29 @@ class AF():
                         return False
         return True
 
+    def is_complete(this, E:list) -> bool:
+        for a in E:                                
+            for b in this.args:                         #we check everything that a is attacking
+                if [a,b] in this.attacks:
+                    for set_attack in this.attacks:            #we check everything attacked by b, and so defended by a
+                        if [b,set_attack[1]] in this.attacks:  
+                            if set_attack[1] not in E:         #if that element is not in E, then E is not a CO
+                                return False
+        return True 
+    
+    def is_stable(this, E:list) -> bool:
+        not_E = set(this.args) - set(E)      # A \ E
 
+        val = False
+        for a in not_E:                      #we check for each a € A\E if an element from E attacks a
+            for set_attack in this.attacks:
+                if set_attack[0] in E and set_attack[1] == a:
+                    val = True
+            if not val:                      #if there's none we return False directly
+                return False
+            else:                            #if there's one we put val back to False for the next loop
+                val = False
+        return True
 
 def main():
     parser = argparse.ArgumentParser()
