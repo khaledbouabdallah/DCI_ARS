@@ -1,0 +1,5 @@
+2023-12-19 14:54:40,996 - INFO - list of arguments: ['a', 'b', 'c', 'd']
+2023-12-19 14:54:40,996 - INFO - list of attacks: [['a', 'b'], ['b', 'c'], ['b', 'd']]
+2023-12-19 14:54:40,996 - INFO - not attacked at all (grounded): {'a'}
+2023-12-19 14:54:40,996 - INFO - new possible complete: {'a', 'c', 'd'}
+2023-12-19 14:54:40,996 - INFO - new possible complete: {'a', 'c', 'd'}

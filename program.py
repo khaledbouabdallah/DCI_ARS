@@ -36,24 +36,57 @@ class AF():
         
     
     
-    def VE_CO(self) -> bool:
+    def VE_CO(this, E) -> bool:
+        for a in E:                                #verify defense
+            for b in this.args:
+                if [a,b] in this.attacks:
+                    for set_attack in this.attacks:
+                        if [b,set_attack[1]] in this.attacks:  #looking for a defender for a
+                            if set_attack[1] not in E:
+                                return False
+        return True 
+    
+
+    def DC_CO(this, a) -> bool:
+        list_co = this.generate_possible_complete()
+
+        for elem in list_co:                 #we check for each elem if is complete
+            if not this.is_complete(elem):
+                list_co.remove(elem)         #if not we remove it from the list
+
+        for elem in list_co:                 #we check if a is in one co
+            print(a, elem)
+            if a[0] in elem:
+                return True
+        return False                         #if not we return False
+    
+
+    def DS_CO(this, a) -> bool:
+        list_co = this.generate_possible_complete()
+
+        for elem in list_co:                 #we check for each elem if is complete
+            if not this.is_complete(elem):
+                list_co.remove(elem)         #if not we remove it from the list
+
+        for elem in list_co:                 #we check if a is in each co
+            if a[0] not in elem:
+                return False
+        return True                          #if not we return True
+
+    
+    def VE_ST(this) -> bool:
+        pass
+
+    
+    def DC_ST(this) -> bool:
+        pass
+
+    
+    def DS_ST(this) -> bool:
         pass
     
-    def DC_CO(self) -> bool:
-        pass
-    
-    def DS_CO(self) -> bool:
-        pass
-    
-    def VE_ST(self) -> bool:
-        pass
-    
-    def DC_ST(self) -> bool:
-        pass
-    
-    def DS_ST(self) -> bool:
-        pass
-    
+
+
     def _get_attacks_by_(self,s) -> set: # get list of attacks done by set s (list of lists)
         attacks = [] 
         for attack in self.attacks:
@@ -103,6 +136,8 @@ class AF():
                 
             pass
 
+
+
     def is_admissible(this, E: list) -> bool:      #returns True if E is an admissable set
         for i in range(len(E)):                    #verify conflict-freeness
             for j in range(i+1, len(E)):
@@ -120,23 +155,16 @@ class AF():
                         return False
         return True
 
-
-"""   ça marche pas bien encore 
-    def is_complete(this, S: list) -> bool:      #return True if E is a complete extension
-        if not this.is_admissible(S):
-            return False
-        for a in this.args:
-            attacking_a = []
-            for elem1 in this.attacks:            
-                if elem1[1] == a:                 #we list all the args that are attacking a
-                    attacking_a.append(elem[0])
-                    for elem_attacking_a in attacking_a:
-                        for elem2 in this.attacks: #we check if all the elements attacking a are attacking by an element in S
-                            if elem2[1] == elem_attacking_a and elem2[0] in S:
-                                continue
-                        return False
+    def is_complete(this, E:list) -> bool:     #returns True if E is a complete set, we suppose E is admissible
+        for a in E:                                #verify defense
+            for b in this.args:
+                if [a,b] in this.attacks:
+                    for set_attack in this.attacks:
+                        if [b,set_attack[1]] in this.attacks:  #looking for a defender for a
+                            if set_attack[1] not in E:
+                                return False
         return True
-"""
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -146,28 +174,26 @@ def main():
     parser.add_argument('-a', type=str) # Arguments
     # Parse the command-line arguments
     args = parser.parse_args()
-    # ##
     af = AF(path=args.f)
-    af.generate_possible_complete()
-    #print(af.is_admissible(['a','c','d']))          #a little test..
-    
+
+
     if args.p == "VE-CO":
-        print("YES") if af.VE_CO(args.a) else print("NO")
+        print("YES") if af.VE_CO(args.a.split(",")) else print("NO")
 
     elif args.p == "VE-ST":
-        print("YES") if af.VE_ST(args.a) else print("NO")
+        print("YES") if af.VE_ST(args.a.split(",")) else print("NO")
 
     elif args.p == "DC-CO":
-        print("YES") if af.DC_CO(args.a) else print("NO")
+        print("YES") if af.DC_CO(args.a.split(",")) else print("NO")
 
     elif args.p == "DS-CO":
-        print("YES") if af.DS_CO(args.a) else print("NO")
+        print("YES") if af.DS_CO(args.a.split(",")) else print("NO")
 
     elif args.p == "DC-ST":
-        print("YES") if af.DC_ST(args.a) else print("NO")
+        print("YES") if af.DC_ST(args.a.split(",")) else print("NO")
 
     elif args.p == "DS-ST":
-        print("YES") if af.DS_ST(args.a) else print("NO")
+        print("YES") if af.DS_ST(args.a.split(",")) else print("NO")
 
 if __name__ == "__main__":
     main()
