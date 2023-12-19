@@ -39,13 +39,11 @@ class AF():
     
     def VE_CO(this, E) -> bool:
         list_co = this.generate_possible_complete()
-        print(list_co)
 
         for elem in list_co:                 #we check for each elem if is complete
             if not this.is_complete(elem):
                 list_co.remove(elem)         #if not we remove it from the list
 
-        print(list_co)
         return True if set(E) in list_co else False      #return True if E in the list of complete extensions
     
 
@@ -77,13 +75,11 @@ class AF():
     
     def VE_ST(this, E) -> bool:
         list_co = this.generate_possible_complete()
-        print(list_co)
 
         for elem in list_co:                 #we check for each elem if is stable
             if not this.is_stable(elem):
                 list_co.remove(elem)         #if not we remove it from the list
 
-        print(list_co)
         return True if set(E) in list_co else False   #return True if E in the list of stable extensions
     
 
@@ -193,7 +189,7 @@ class AF():
     
     def is_stable(this, E:list) -> bool:
         not_E = set(this.args) - set(E)      # A \ E
-
+        
         val = False
         for a in not_E:                      #we check for each a € A\E if an element from E attacks a
             for set_attack in this.attacks:
@@ -219,14 +215,14 @@ def main():
     if args.p == "VE-CO":
         print("YES") if af.VE_CO(args.a.split(",")) else print("NO")
 
-    elif args.p == "VE-ST":
-        print("YES") if af.VE_ST(args.a) else print("NO")
-
     elif args.p == "DC-CO":
         print("YES") if af.DC_CO(args.a) else print("NO")
 
     elif args.p == "DS-CO":
-        print("YES") if af.DS_CO(args.a.split(",")) else print("NO")
+        print("YES") if af.DS_CO(args.a) else print("NO")
+
+    elif args.p == "VE-ST":
+        print("YES") if af.VE_ST(args.a.split(",")) else print("NO")
 
     elif args.p == "DC-ST":
         print("YES") if af.DC_ST(args.a) else print("NO")
