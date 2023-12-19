@@ -19,7 +19,7 @@ logger.setLevel(logging.DEBUG)  # Set the logger level to the lowest (DEBUG)
 
 class AF():
     
-    args = []
+    args = set()
     attacks = []
     
     def __init__(self,path) -> None:
@@ -27,7 +27,7 @@ class AF():
             lines = file.readlines()
             for line in lines:
                 if line.startswith("arg"): 
-                    self.args.append(line[4:].split(")")[0])
+                    self.args.add(line[4:].split(")")[0])
                 elif line.startswith("att"):
                     attack = [line[4:].split(",")[0],line[4:].split(",")[1].split(")")[0]]
                     self.attacks.append(attack)
@@ -79,11 +79,8 @@ class AF():
     def _get_not_attacked_by(self,s,z) -> set: # get subset of 's' which are not attacked by set 'z'
         arguments = set(self.args)
         return arguments.difference(self._get_attacked_by_(s,z))
-    
- 
-    
-  
-    def generate_possible_complete(self) -> list:
+      
+    def _generate_possible_complete_(self) -> list:
         result = []
         # find nodes that are not attacked by anyone
         not_attacked =  self._get_not_attacked_by(self.args,self.args)
@@ -99,44 +96,36 @@ class AF():
                     return result
                 result.append(new_not_attacked)
         else: # we only have the empty set 
-            logger.info(f"not attacked at all (grounded): empty set") 
+            logger.info(f"not attacked at all (grounded): empty set")    
+            for argument in self.args:
+                    new_attackers = self._get_not_attacked_by(self.args,argument) # original set - set which are attacked by the grounded (first iteration example) 
+                    new_not_attacked = self._get_not_attacked_by(self.args,argument) # set which are not attacked by #1 (defended by grounded (first iteration))
+                    if not new_not_attacked: # pass current iteration
+                        pass 
+                    result.append(new_not_attacked)
+                    while True: # same logic as the other case
+                        new_attackers = self._get_not_attacked_by(self.args,result[-1]) 
+                        new_not_attacked = self._get_not_attacked_by(self.args,new_attackers) 
+                        logger.info(f"new possible complete: {new_not_attacked}")
+                        if new_not_attacked in result:
+                            break
+                        result.append(new_not_attacked)
+            return result
+                
+                    
+            
+            
+            
                 
             pass
 
-    def is_admissible(this, E: list) -> bool:      #returns True if E is an admissable set
-        for i in range(len(E)):                    #verify conflict-freeness
-            for j in range(i+1, len(E)):
-                if [E[i], E[j]] in this.attacks:
-                    return False
-        
-        val = False
-        for a in E:                                #verify defense
-            for b in this.args:
-                if [b,a] in this.attacks:
-                    for c in E:
-                        if [c,b] in this.attacks:  #looking for a defender for a
-                            val = True
-                    if val == False:
-                        return False
-        return True
+    
+    def _is_complete_(self,s) -> bool: # given an admissible set, is it complete?
+        # TODO 
+        pass
 
 
-"""   ça marche pas bien encore 
-    def is_complete(this, S: list) -> bool:      #return True if E is a complete extension
-        if not this.is_admissible(S):
-            return False
-        for a in this.args:
-            attacking_a = []
-            for elem1 in this.attacks:            
-                if elem1[1] == a:                 #we list all the args that are attacking a
-                    attacking_a.append(elem[0])
-                    for elem_attacking_a in attacking_a:
-                        for elem2 in this.attacks: #we check if all the elements attacking a are attacking by an element in S
-                            if elem2[1] == elem_attacking_a and elem2[0] in S:
-                                continue
-                        return False
-        return True
-"""
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -146,10 +135,9 @@ def main():
     parser.add_argument('-a', type=str) # Arguments
     # Parse the command-line arguments
     args = parser.parse_args()
-    # ##
     af = AF(path=args.f)
-    af.generate_possible_complete()
-    #print(af.is_admissible(['a','c','d']))          #a little test..
+    af._generate_possible_complete_()
+
     
     if args.p == "VE-CO":
         print("YES") if af.VE_CO(args.a) else print("NO")
