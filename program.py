@@ -74,16 +74,48 @@ class AF():
         return True                          #if not we return True
 
     
-    def VE_ST(this) -> bool:
-        pass
+    def VE_ST(this, E) -> bool:
+        list_co = this.generate_possible_complete()
+
+        not_E = this.args.difference(E)
+
+        val = False
+        for a in not_E: 
+            for set_attack in this.attacks:
+                if set_attack[0] in E and set_attack[1] == a:
+                    val = True
+            if not val:
+                return False
+            else:
+                val = False
+        return True
+    
+
+    def DC_ST(this, a) -> bool:
+        list_co = this.generate_possible_complete()
+
+        for elem in list_co:                 #we check for each elem if is complete
+            if not this.VE_ST(elem):
+                list_co.remove(elem)         #if not we remove it from the list
+
+        for elem in list_co:                 #we check if a is in one co
+            print(a, elem)
+            if a[0] in elem:
+                return True
+        return False                         #if not we return False
 
     
-    def DC_ST(this) -> bool:
-        pass
+    def DS_ST(this, a) -> bool:
+        list_co = this.generate_possible_complete()
 
-    
-    def DS_ST(this) -> bool:
-        pass
+        for elem in list_co:                 #we check for each elem if is complete
+            if not this.VE_ST(elem):
+                list_co.remove(elem)         #if not we remove it from the list
+
+        for elem in list_co:                 #we check if a is in each co
+            if a[0] not in elem:
+                return False
+        return True                          #if not we return True
     
 
 
