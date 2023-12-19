@@ -57,8 +57,7 @@ class AF():
                 list_co.remove(elem)         #if not we remove it from the list
 
         for elem in list_co:                 #we check if a is in one co
-            print(a, elem)
-            if a[0] in elem:
+            if a in elem:
                 return True
         return False                         #if not we return False
     
@@ -71,7 +70,7 @@ class AF():
                 list_co.remove(elem)         #if not we remove it from the list
 
         for elem in list_co:                 #we check if a is in each co
-            if a[0] not in elem:
+            if a not in elem:
                 return False
         return True                          #if not we return True
 
@@ -96,7 +95,7 @@ class AF():
                 list_co.remove(elem)         #if not we remove it from the list
 
         for elem in list_co:                 #we check if a is in one co
-            if a[0] in elem:
+            if a in elem:
                 return True
         return False                         #if not we return False
 
@@ -109,7 +108,7 @@ class AF():
                 list_co.remove(elem)         #if not we remove it from the list
 
         for elem in list_co:                 #we check if a is in each co
-            if a[0] not in elem:
+            if a not in elem:
                 return False
         return True                          #if not we return True
     
@@ -161,7 +160,13 @@ class AF():
                 result.append(new_not_attacked)
         else: # we only have the empty set 
             logger.info(f"not attacked at all (grounded): empty set") 
-                
+            while True:
+                new_attackers = self._get_not_attacked_by(self.args,result[-1]) # original set - set which are attacked by the grounded (first iteration example) #1
+                new_not_attacked = self._get_not_attacked_by(self.args,new_attackers) # set which are not attacked by #1 (defended by grounded (first iteration))
+                logger.info(f"new possible complete: {new_not_attacked}")
+                if new_not_attacked in result:
+                    return result
+                result.append(new_not_attacked)               
             pass
 
 
@@ -222,19 +227,19 @@ def main():
         print("YES") if af.VE_CO(args.a.split(",")) else print("NO")
 
     elif args.p == "VE-ST":
-        print("YES") if af.VE_ST(args.a.split(",")) else print("NO")
+        print("YES") if af.VE_ST(args.a) else print("NO")
 
     elif args.p == "DC-CO":
-        print("YES") if af.DC_CO(args.a.split(",")) else print("NO")
+        print("YES") if af.DC_CO(args.a) else print("NO")
 
     elif args.p == "DS-CO":
         print("YES") if af.DS_CO(args.a.split(",")) else print("NO")
 
     elif args.p == "DC-ST":
-        print("YES") if af.DC_ST(args.a.split(",")) else print("NO")
+        print("YES") if af.DC_ST(args.a) else print("NO")
 
     elif args.p == "DS-ST":
-        print("YES") if af.DS_ST(args.a.split(",")) else print("NO")
+        print("YES") if af.DS_ST(args.a) else print("NO")
 
 if __name__ == "__main__":
     main()
