@@ -77,16 +77,16 @@ class AF():
     def VE_ST(this, E) -> bool:
         list_co = this.generate_possible_complete()
 
-        not_E = this.args.difference(E)
+        not_E = this.args.difference(E)      # A \ E
 
         val = False
-        for a in not_E: 
+        for a in not_E:                      #we check for each a € A\E if an element from E attacks a
             for set_attack in this.attacks:
                 if set_attack[0] in E and set_attack[1] == a:
                     val = True
-            if not val:
+            if not val:                      #if there's none we return False directly
                 return False
-            else:
+            else:                            #if there's one we put val back to False for the next loop
                 val = False
         return True
     
