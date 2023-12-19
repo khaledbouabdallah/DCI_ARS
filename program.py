@@ -37,12 +37,12 @@ class AF():
     
     
     def VE_CO(this, E) -> bool:
-        for a in E:                                #verify defense
-            for b in this.args:
+        for a in E:                                
+            for b in this.args:                         #we check everything that a is attacking
                 if [a,b] in this.attacks:
-                    for set_attack in this.attacks:
-                        if [b,set_attack[1]] in this.attacks:  #looking for a defender for a
-                            if set_attack[1] not in E:
+                    for set_attack in this.attacks:            #we check everything attacked by b, and so defended by a
+                        if [b,set_attack[1]] in this.attacks:  
+                            if set_attack[1] not in E:         #if that element is not in E, then E is not a CO
                                 return False
         return True 
     
