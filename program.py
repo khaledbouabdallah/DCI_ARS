@@ -85,12 +85,13 @@ class AF():
     def _get_not_attacked_by(self,s,z) -> set: # get subset of 's' which are not attacked by set 'z'
         arguments = set(self.args)
         return arguments.difference(self._get_attacked_by_(s,z))
-      
+        
     def _generate_possible_complete_(self) -> list:
         result = []
         # find nodes that are not attacked by anyone
         not_attacked =  self._get_not_attacked_by(self.args,self.args)
         result.append(not_attacked)
+        logger.debug(self._is_attacked_by_(set(),self.args))
             
         if not_attacked: # we found something 
             logger.info(f"not attacked at all (grounded): {not_attacked}")     
@@ -107,11 +108,12 @@ class AF():
                     if self._set_is_in_list(set(argument),result):
                         continue
                     logger.info(f"picked start: {argument}")
+                    
                     new_attackers = self._get_not_attacked_by(self.args,argument) # original set - set which are attacked by the grounded (first iteration example) 
                     new_not_attacked = self._get_not_attacked_by(self.args,new_attackers) # set which are not attacked by #1 (defended by grounded (first iteration))
         
-                    if not new_not_attacked: # pass current iteration
-                        logger.info(f"new possible complete: 'empty set'")
+                    if not new_not_attacked or self._is_attacked_by_(argument,new_attackers): # defends nothing
+                        #logger.info(f"new possible complete: 'empty set'")
                         continue 
                     logger.info(f"new possible complete: {new_not_attacked}")
                     if not self._set_is_in_list(new_not_attacked,result): 
@@ -120,6 +122,8 @@ class AF():
                         new_attackers = self._get_not_attacked_by(self.args,result[-1]) 
                         new_not_attacked = self._get_not_attacked_by(self.args,new_attackers)      
                         if self._set_is_in_list(new_not_attacked,result): 
+                            break                  
+                        if self._is_attacked_by_(result[-1],new_attackers):
                             break
                         logger.info(f"new possible complete: {new_not_attacked}")
                         result.append(new_not_attacked)
