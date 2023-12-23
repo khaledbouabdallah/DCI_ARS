@@ -93,7 +93,7 @@ class AF():
             else:
                 result.add(x)
         
-        logger.info(f"candidates to add to grounded: {result}")
+        
         return result
     
     def _characteristic_function_(self,s) -> set: #return F(s)
@@ -121,26 +121,35 @@ class AF():
     def _generate_complete_(self) -> list:
         grounded = self._get_grounded_()
         complete = [grounded,]
+        sets_checked = []
         sets = [grounded,]
-        cf_to_grounded = self._conflict_free_set_(grounded)
-        logger.info(f"grounded cf: {cf_to_grounded}")
-        for s in cf_to_grounded:     
-            z = grounded.union(set(s))
-            if self._set_is_in_list(z,sets):
-                continue  
-            logger.info(f"=================")  
-            logger.info(f"grounded-candidate union : {z}")  
-            while True:   
-                x = self._characteristic_function_(z)
-                logger.info(f"F {z} === {x}")
-                if not self._set_is_in_list(x,sets):
-                   sets.append(x)
-                   z = x.copy()
-                elif x == z:
-                    complete.append(x)
-                    break
-                else:
-                    break    
+        checked = [grounded,]
+
+        while sets:
+            
+            y = sets.pop()
+            if not self._set_is_in_list(y,sets_checked):
+                sets_checked.append(y)
+                cf = self._conflict_free_set_(y)
+                for s in cf:     
+                    z = y.union(set(s))
+                    sets.append(z)
+                    if self._set_is_in_list(z,checked):
+                        continue 
+                    logger.info(f"=================")  
+                    logger.info(f"grounded-candidate union : {z} from {s} and {y}")  
+                    while True:   
+                        x = self._characteristic_function_(z)
+                        logger.info(f"F {z} === {x}")
+                        if not self._set_is_in_list(x,checked):
+                         checked.append(x)
+                         z = x.copy()
+                        elif x == z:
+                            complete.append(x)
+                            logger.error("complete")
+                            break
+                        else:
+                            break         
         logger.info(f"complete {complete}")
                 
             
