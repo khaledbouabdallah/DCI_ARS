@@ -4,7 +4,6 @@ import datetime
 
 
 # Set up the logging configuration with a FileHandler
-#log_filename = f"log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
 log_filename = "log.txt"
 log_handler = logging.FileHandler(log_filename, mode='w')
 log_handler.setLevel(logging.DEBUG)  # Set the level to the lowest (DEBUG)
@@ -19,8 +18,10 @@ class AF():
     
     args = set()
     attacks = []
+    complete = set()
     
     def __init__(self,path) -> None:
+        # reading DF from text file
         with open(path) as file:
             lines = file.readlines()
             for line in lines:
@@ -30,7 +31,9 @@ class AF():
                     attack = [line[4:].split(",")[0],line[4:].split(",")[1].split(")")[0]]
                     self.attacks.append(attack)
         logger.info(f'list of arguments: {self.args}') 
-        logger.info(f'list of attacks: {self.attacks}')             
+        logger.info(f'list of attacks: {self.attacks}')
+        # finding all complete extentions
+        self.complete = self._generate_complete_()          
         
     
     
@@ -121,27 +124,25 @@ class AF():
     def _generate_complete_(self) -> list:
         grounded = self._get_grounded_()
         complete = [grounded,]
-        sets_checked = []
+        sets_checked = []  
         sets = [grounded,]
         checked = [grounded,]
-
-        while sets:
-            
+        while sets: # as long we have cf sets to check keep going
             y = sets.pop()
-            if not self._set_is_in_list(y,sets_checked):
+            if not self._set_is_in_list(y,sets_checked): # to prevent from checking alreday checked cf sets
                 sets_checked.append(y)
-                cf = self._conflict_free_set_(y)
+                cf = self._conflict_free_set_(y) # get a set of nodes that can be cf with y 
                 for s in cf:     
-                    z = y.union(set(s))
+                    z = y.union(set(s)) # make a union (add arguments on top of y) (on top of grounded for first While iteration)
                     sets.append(z)
-                    if self._set_is_in_list(z,checked):
+                    if self._set_is_in_list(z,checked): # if this set was already found in another iteration, ignore it
                         continue 
                     logger.info(f"=================")  
-                    logger.info(f"grounded-candidate union : {z} from {s} and {y}")  
-                    while True:   
+                    logger.info(f"candidate union : {z} from {s} and {y}")  
+                    while True:  # until we find a fixed point, we keep aplying the characterstic function 
                         x = self._characteristic_function_(z)
                         logger.info(f"F {z} === {x}")
-                        if not self._set_is_in_list(x,checked):
+                        if not self._set_is_in_list(x,checked): #to prenvet open loops when calculating the characterstic function
                          checked.append(x)
                          z = x.copy()
                         elif x == z:
@@ -152,63 +153,6 @@ class AF():
                             break         
         logger.info(f"complete {complete}")
                 
-            
-            
-        
-        
-        
-        
-        
-
-    def _generate_possible_complete_(self) -> list:
-        result = []
-        # find nodes that are not attacked by anyone
-        not_attacked =  self._get_not_attacked_by(self.args,self.args)
-        result.append(not_attacked)
-        logger.debug(self._is_attacked_by_(set(),self.args))
-            
-        if not_attacked: # we found something 
-            logger.info(f"not attacked at all (grounded): {not_attacked}")     
-            while True:
-                new_attackers = self._get_not_attacked_by(self.args,result[-1]) # original set - set which are attacked by the grounded (first iteration example) #1
-                new_not_attacked = self._get_not_attacked_by(self.args,new_attackers) # set which are not attacked by #1 (defended by grounded (first iteration))
-                logger.info(f"new possible complete: {new_not_attacked}")
-                if new_not_attacked in result:
-                    return result
-                result.append(new_not_attacked)
-        else: # we only have the empty set 
-            logger.info(f"not attacked at all (grounded): empty set")    
-            for argument in self.args:
-                    if self._set_is_in_list(set(argument),result):
-                        continue
-                    logger.info(f"picked start: {argument}")
-                    
-                    new_attackers = self._get_not_attacked_by(self.args,argument) # original set - set which are attacked by the grounded (first iteration example) 
-                    new_not_attacked = self._get_not_attacked_by(self.args,new_attackers) # set which are not attacked by #1 (defended by grounded (first iteration))
-        
-                    if not new_not_attacked or self._is_attacked_by_(argument,new_attackers): # defends nothing
-                        #logger.info(f"new possible complete: 'empty set'")
-                        continue 
-                    logger.info(f"new possible complete: {new_not_attacked}")
-                    if not self._set_is_in_list(new_not_attacked,result): 
-                            result.append(new_not_attacked)
-                    while True: # same logic as the other case
-                        new_attackers = self._get_not_attacked_by(self.args,result[-1]) 
-                        new_not_attacked = self._get_not_attacked_by(self.args,new_attackers)      
-                        if self._set_is_in_list(new_not_attacked,result): 
-                            break                  
-                        if self._is_attacked_by_(result[-1],new_attackers):
-                            break
-                        logger.info(f"new possible complete: {new_not_attacked}")
-                        result.append(new_not_attacked)
-            logger.info(f"list of possible complete extensions: {result}")
-            return result
-                
-                
-            
-
-
-
 def main():
     parser = argparse.ArgumentParser()
     # Add script arguments
@@ -217,8 +161,8 @@ def main():
     parser.add_argument('-a', type=str) # Arguments
     # Parse the command-line arguments
     args = parser.parse_args()
+    # build AF
     af = AF(path=args.f)
-    af._generate_complete_()
 
     
 
