@@ -15,8 +15,6 @@ logger.addHandler(log_handler)
 logger.setLevel(logging.DEBUG)  # Set the logger level to the lowest (DEBUG)
 
 
-# Example usage
-
 class AF():
     
     args = set()
@@ -85,7 +83,74 @@ class AF():
     def _get_not_attacked_by(self,s,z) -> set: # get subset of 's' which are not attacked by set 'z'
         arguments = set(self.args)
         return arguments.difference(self._get_attacked_by_(s,z))
+    
+    def _conflict_free_set_(self,s) -> set:# return the largest set which is conflict free with s
+        candidates = self.args.difference(s)
+        result = set()
+        for x in candidates:
+            if self._is_attacked_by_(set(x),s) or self._is_attacked_by_(s,set(x)):
+                pass
+            else:
+                result.add(x)
         
+        logger.info(f"candidates to add to grounded: {result}")
+        return result
+    
+    def _characteristic_function_(self,s) -> set: #return F(s)
+        attackers = self.args.copy()
+        not_attacked = self._get_not_attacked_by(self.args,s)
+        for x in s:       
+            if not self._is_attacked_by_(set(x),not_attacked):
+                attackers = attackers.difference(self._get_attacked_by_(self.args,x))
+        result = self._get_not_attacked_by(self.args,attackers)
+        #logger.debug(f" {s} => {attackers} => {result}")
+        return result
+ 
+    def _get_grounded_(self) -> set: # return grounded
+        # find nodes that are not attacked by anyone
+        old_grounded = set()
+        while True:
+            grounded = self._characteristic_function_(old_grounded)
+            if grounded == old_grounded:
+                break
+            else:
+                old_grounded = grounded.copy()
+        logger.info(f"grounded = {grounded}")
+        return grounded
+       
+    def _generate_complete_(self) -> list:
+        grounded = self._get_grounded_()
+        complete = [grounded,]
+        sets = [grounded,]
+        cf_to_grounded = self._conflict_free_set_(grounded)
+        logger.info(f"grounded cf: {cf_to_grounded}")
+        for s in cf_to_grounded:     
+            z = grounded.union(set(s))
+            if self._set_is_in_list(z,sets):
+                continue  
+            logger.info(f"=================")  
+            logger.info(f"grounded-candidate union : {z}")  
+            while True:   
+                x = self._characteristic_function_(z)
+                logger.info(f"F {z} === {x}")
+                if not self._set_is_in_list(x,sets):
+                   sets.append(x)
+                   z = x.copy()
+                elif x == z:
+                    complete.append(x)
+                    break
+                else:
+                    break    
+        logger.info(f"complete {complete}")
+                
+            
+            
+        
+        
+        
+        
+        
+
     def _generate_possible_complete_(self) -> list:
         result = []
         # find nodes that are not attacked by anyone
@@ -130,6 +195,7 @@ class AF():
             logger.info(f"list of possible complete extensions: {result}")
             return result
                 
+                
             
 
 
@@ -143,7 +209,9 @@ def main():
     # Parse the command-line arguments
     args = parser.parse_args()
     af = AF(path=args.f)
-    af._generate_possible_complete_()
+    af._generate_complete_()
+
+    
 
     
     if args.p == "VE-CO":
