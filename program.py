@@ -2,16 +2,22 @@ import argparse
 import logging
 import datetime
 
-
-# Set up the logging configuration with a FileHandler
-log_filename = "log.txt"
-log_handler = logging.FileHandler(log_filename, mode='w')
-log_handler.setLevel(logging.DEBUG)  # Set the level to the lowest (DEBUG)
-log_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-# Create a logger and add the FileHandler to it
+LOG_MODE = "ON" # "ON" if you want to generate a log.txt file that contains extra information
 logger = logging.getLogger()
-logger.addHandler(log_handler)
-logger.setLevel(logging.DEBUG)  # Set the logger level to the lowest (DEBUG)
+
+if LOG_MODE == "OFF":
+    # Set up the logging configuration with a NullHandler
+    log_handler = logging.NullHandler()
+    logger.addHandler(log_handler)
+elif LOG_MODE == "ON":
+    # Set up the logging configuration with a FileHandler
+    log_filename = "log.txt"
+    log_handler = logging.FileHandler(log_filename, mode='w')
+    log_handler.setLevel(logging.DEBUG)  # Set the handler level to the lowest (DEBUG)
+    log_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+    # add the FileHandler to it 
+    logger.addHandler(log_handler)
+    logger.setLevel(logging.DEBUG)  # Set the logger level to the lowest (DEBUG)
 
 
 class AF():
@@ -33,27 +39,38 @@ class AF():
         logger.info(f'list of arguments: {self.args}') 
         logger.info(f'list of attacks: {self.attacks}')
         # finding all complete extentions
-        self.complete = self._generate_complete_()          
+        self.complete = self._generate_complete_()
+        self.stable = self._generate_stable_ ()   
+        self.skep_comp = self._skeptically_accapted_(self.complete) 
+        self.skep_stab = self._skeptically_accapted_(self.stable)     
+        self.cred_comp = self._credulously_accapted_(self.complete) 
+        self.cred_stab = self._credulously_accapted_(self.stable)  
+        logger.info(f'list of complete skeptically accapted arguments: {self.skep_comp}')   
+        logger.info(f'list of complete credulously accapted arguments: {self.cred_comp}')  
+        logger.info(f'list of stable skeptically accapted arguments: {self.skep_stab}')  
+        logger.info(f'list of stable credulously accapted arguments: {self.cred_comp}')  
         
+    def VE_CO(self,s) -> bool: # whether S is a complete extension
+        return self._set_is_in_list(s,self.complete)
     
+    def DC_CO(self,a) -> bool: # whether a belongs to some complete extension 
+        credulously_arguments = self._credulously_accapted_(self.complete)
+        return a in credulously_arguments
     
-    def VE_CO(self) -> bool:
-        pass
+    def DS_CO(self,a) -> bool: # whether a belongs to each complete extension 
+        skeptically_arguments = self._skeptically_accapted_(self.complete)
+        return a in skeptically_arguments
     
-    def DC_CO(self) -> bool:
-        pass
+    def VE_ST(self,s) -> bool: # whether S is a stable extension 
+        return self._set_is_in_list(s,self.stable)
     
-    def DS_CO(self) -> bool:
-        pass
+    def DC_ST(self,a) -> bool: # whether a belongs to some stable extension 
+        credulously_arguments = self._credulously_accapted_(self.stable)
+        return a in credulously_arguments
     
-    def VE_ST(self) -> bool:
-        pass
-    
-    def DC_ST(self) -> bool:
-        pass
-    
-    def DS_ST(self) -> bool:
-        pass
+    def DS_ST(self,a) -> bool: # whether a belongs to each stable extension 
+        skeptically_arguments = self._skeptically_accapted_(self.stable)
+        return a in skeptically_arguments
     
     def _set_is_in_list(self,s,l) -> bool: #check if a set is in a list of sets (somehow set in L does not work directly)
         for x in l:
@@ -106,7 +123,6 @@ class AF():
             if not self._is_attacked_by_(set(x),not_attacked):
                 attackers = attackers.difference(self._get_attacked_by_(self.args,x))
         result = self._get_not_attacked_by(self.args,attackers)
-        #logger.debug(f" {s} => {attackers} => {result}")
         return result
  
     def _get_grounded_(self) -> set: # return grounded
@@ -121,7 +137,7 @@ class AF():
         logger.info(f"grounded = {grounded}")
         return grounded
        
-    def _generate_complete_(self) -> list:
+    def _generate_complete_(self) -> list: # list of complete extension sets
         grounded = self._get_grounded_()
         complete = [grounded,]
         sets_checked = []  
@@ -147,12 +163,37 @@ class AF():
                          z = x.copy()
                         elif x == z:
                             complete.append(x)
-                            logger.error("complete")
                             break
                         else:
-                            break         
-        logger.info(f"complete {complete}")
+                            break
+        logger.info(f"complete extensions =  {complete}")                 
+        return complete                    
+        
+    def _skeptically_accapted_(self,sets_list): 
+        
+        if len(sets_list) == 1 and sets_list[0] == set(): # if we have no extention, all arguments are skeptically acapted
+            return self.args      
+        return sets_list[0].intersection(*sets_list[1:])  
+    
+    def _credulously_accapted_(self,sets_list):
+        return set().union(*sets_list)  
                 
+    def _generate_stable_(self) -> list: # list of stable extension sets
+        
+        stable = []
+        for c in self.complete:
+            attack_all = True
+            diff = self.args.difference(c) #complement of c 
+            for x in diff:
+                if not self._is_attacked_by_(x,c):
+                    attack_all = False
+                    break
+            if attack_all: # c needs to attack its complement to be stable
+                stable.append(c)
+        logger.info(f"Stable extensions: {stable}")        
+        return stable
+    
+
 def main():
     parser = argparse.ArgumentParser()
     # Add script arguments
@@ -163,11 +204,15 @@ def main():
     args = parser.parse_args()
     # build AF
     af = AF(path=args.f)
-
     
-
-    
-    if args.p == "VE-CO":
+    if args.a:
+        l = args.a.split(",")
+        if len(l) == 1:
+            args.a = l[0]
+        else:
+            args.a = set(l)
+            
+    if args.p == "VE-CO":  
         print("YES") if af.VE_CO(args.a) else print("NO")
 
     elif args.p == "VE-ST":
