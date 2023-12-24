@@ -1,0 +1,12 @@
+arg(a).
+arg(b).
+arg(c).
+arg(d).
+arg(e).
+arg(f).
+att(f,e).
+att(e,c).
+att(c,a).
+att(d,c).
+att(d,b).
+att(b,a).
