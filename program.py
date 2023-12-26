@@ -1,6 +1,5 @@
 import argparse
 import logging
-import datetime
 
 LOG_MODE = "ON" # "ON" if you want to generate a log.txt file that contains extra information
 logger = logging.getLogger()
@@ -138,6 +137,15 @@ class AF():
         return grounded
        
     def _generate_complete_(self) -> list: # list of complete extension sets
+        """_summary_  to find the complete extensions the function does:
+        1 - find grounded extension (calling _get_grounded_)
+        2 - declare multiple list that can be used to track of verified sets and save complete extensions
+        3 - on the first outer while loop, we add cf (conflict free) arguments to grounded 
+        4 - for each new set (grounded + new argument) we apply the characteristic function until we find a fixed point, if F(s) = s then s is complete ()
+        5 - for each of the fixed points that we found, we apply steps 2,3,4 until we are out of unverified sets 
+        Returns:
+            list of sets: all complete extensions 
+        """
         grounded = self._get_grounded_()
         complete = [grounded,]
         sets_checked = []  
@@ -169,16 +177,23 @@ class AF():
         logger.info(f"complete extensions =  {complete}")                 
         return complete                    
         
-    def _skeptically_accapted_(self,sets_list): 
-        
-        if len(sets_list) == 1 and sets_list[0] == set(): # if we have no extention, all arguments are skeptically acapted
+    def _skeptically_accapted_(self,sets_list):      
+        if len(sets_list) == 0: # if we have no extensions, all arguments are skeptically accepted
             return self.args      
-        return sets_list[0].intersection(*sets_list[1:])  
+        return sets_list[0].intersection(*sets_list[1:])  # skeptically accapted iff it belongs to the intersection of the extensions
     
     def _credulously_accapted_(self,sets_list):
-        return set().union(*sets_list)  
+        return set().union(*sets_list) # skeptically accapted iff it belongs to the union of the extensions
                 
     def _generate_stable_(self) -> list: # list of stable extension sets
+        """ this methods finds the stable extensions with the following steps:
+        for every complete extension, if there is one argument outside of it, 
+        which is not being attacked by it, its not stable, otherwise its stable
+        (stable iff attacks all arguments outside of it) 
+
+        Returns:
+            list of sets: all stable extensions 
+        """
         
         stable = []
         for c in self.complete:
