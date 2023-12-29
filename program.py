@@ -115,13 +115,23 @@ class AF():
         
         return result
     
+    def _remove_argument_attack_it_self(self,s) -> set:# given a set of arguments, remove arguments that attack them selves
+        result = set()
+        for x in s:
+            if not self._is_attacked_by_(set(x),set(x)):
+                result.add(x)
+        return result
+    
     def _characteristic_function_(self,s) -> set: #return F(s)
         attackers = self.args.copy()
         not_attacked = self._get_not_attacked_by(self.args,s)
         for x in s:       
-            if not self._is_attacked_by_(set(x),not_attacked):
+            if True: #not self._is_attacked_by_(set(x),not_attacked):
                 attackers = attackers.difference(self._get_attacked_by_(self.args,x))
+            else:
+                logger.debug(f"{x} can't defend it self")
         result = self._get_not_attacked_by(self.args,attackers)
+        result = self._remove_argument_attack_it_self(result)
         return result
  
     def _get_grounded_(self) -> set: # return grounded
@@ -146,6 +156,7 @@ class AF():
         Returns:
             list of sets: all complete extensions 
         """
+        logger.info("======Generate Complete Method ========== ")
         grounded = self._get_grounded_()
         complete = [grounded,]
         sets_checked = []  
@@ -160,9 +171,9 @@ class AF():
                     z = y.union(set(s)) # make a union (add arguments on top of y) (on top of grounded for first While iteration)
                     sets.append(z)
                     if self._set_is_in_list(z,checked): # if this set was already found in another iteration, ignore it
-                        continue 
-                    logger.info(f"=================")  
-                    logger.info(f"candidate union : {z} from {s} and {y}")  
+                        continue  
+                    logger.info("=================================")
+                    logger.info(f" candidate union : {z} from {s} and {y}")  
                     while True:  # until we find a fixed point, we keep aplying the characterstic function 
                         x = self._characteristic_function_(z)
                         logger.info(f"F {z} === {x}")
@@ -171,10 +182,14 @@ class AF():
                          z = x.copy()
                         elif x == z:
                             complete.append(x)
+                            logger.info(f"{x} is complete!")
                             break
                         else:
-                            break
-        logger.info(f"complete extensions =  {complete}")                 
+                            break 
+                        
+                        
+        logger.info(f"complete extensions =  {complete}") 
+        logger.info("=============  END ================= ")                
         return complete                    
         
     def _skeptically_accapted_(self,sets_list):      
